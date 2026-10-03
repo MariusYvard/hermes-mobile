@@ -1,0 +1,47 @@
+name: macOS tests and iOS simulator preflight
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths: ['.github/**', 'spikes/**']
+permissions:
+  contents: read
+concurrency:
+  group: macos-preflight-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  preflight:
+    runs-on: macos-15
+    timeout-minutes: 12
+    env:
+      HM_TEST_SCRATCH: ${{ runner.temp }}/hermes-mobile-tests
+    steps:
+      - name: Checkout reviewed public subset
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          persist-credentials: false
+      - name: Node
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '26'
+      - name: Portable JavaScript tests
+        run: |
+          mkdir -p .ci-artifacts
+          node --version
+          node --test spikes/004-client-stream/sse.test.mjs spikes/004-client-stream/runner.test.mjs spikes/005-connection-client/client.test.mjs spikes/006-error-policy/presentation.test.mjs
+      - name: SQLite memory and selector tests
+        run: |
+          python3 --version
+          python3 -B -m unittest discover -s spikes/007-local-memory -v
+          python3 -B -O -m unittest discover -s spikes/007-local-memory -v
+          python3 -B -m unittest discover -s .github/scripts -v
+      - name: Boot iOS simulator, no application acceptance claim
+        run: python3 .github/scripts/ios_simulator_smoke.py --output .ci-artifacts
+      - name: Simulator infrastructure evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: ios-simulator-preflight
+          path: .ci-artifacts/
+          retention-days: 3
+          if-no-files-found: warn

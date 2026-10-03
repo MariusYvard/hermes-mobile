@@ -1,0 +1,25 @@
+# Local secrets, signing material and agent state must never enter this repository.
+.env
+.env.*
+*.pem
+*.key
+*.p12
+*.p8
+*.mobileprovision
+credentials.json
+auth.json
+state.db*
+*.sqlite*
+# Dependencies, generated output and local caches
+node_modules/
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.expo/
+dist/
+build/
+# Runtime test data belongs in Hermes scratch, not here.
+runtime/
+.ci-artifacts/

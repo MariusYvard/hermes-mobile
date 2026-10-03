@@ -13,8 +13,7 @@ jobs:
   preflight:
     runs-on: macos-15
     timeout-minutes: 12
-    env:
-      HM_TEST_SCRATCH: ${{ runner.temp }}/hermes-mobile-tests
+
     steps:
       - name: Checkout reviewed public subset
         uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
@@ -30,6 +29,8 @@ jobs:
           node --version
           node --test spikes/004-client-stream/sse.test.mjs spikes/004-client-stream/runner.test.mjs spikes/005-connection-client/client.test.mjs spikes/006-error-policy/presentation.test.mjs
       - name: SQLite memory and selector tests
+        env:
+          HM_TEST_SCRATCH: ${{ runner.temp }}/hermes-mobile-tests
         run: |
           python3 --version
           python3 -B -m unittest discover -s spikes/007-local-memory -v
